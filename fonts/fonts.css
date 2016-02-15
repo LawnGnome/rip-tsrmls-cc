@@ -1,0 +1,36 @@
+@import url(octicons/octicons.css);
+
+@font-face {
+  font-family: Lato;
+  src: url(../fonts/Lato/Lato-Regular.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: Lato;
+  font-style: italic;
+  src: url(../fonts/Lato/Lato-Italic.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: Lato;
+  font-weight: bold;
+  src: url(../fonts/Lato/Lato-Bold.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: Lato;
+  font-style: italic;
+  font-weight: bold;
+  src: url(../fonts/Lato/Lato-BoldItalic.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: Inconsolata;
+  src: url(../fonts/Inconsolata/Inconsolata-Regular.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: Inconsolata;
+  font-weight: bold;
+  src: url(../fonts/Inconsolata/Inconsolata-Bold.ttf) format("truetype");
+}
