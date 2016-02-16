@@ -10,6 +10,11 @@
   font-family: Inconsolata, monospace;
 }
 
+.reveal ul {
+  list-style: none;
+  margin-left: 0;
+}
+
 .octicon {
   font-family: octicons !important;
   font-size: 2em !important;

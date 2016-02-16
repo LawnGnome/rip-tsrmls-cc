@@ -14,8 +14,8 @@
 		<link rel="stylesheet" href="reveal.js/css/reveal.css">
 		<link rel="stylesheet" href="reveal.js/css/theme/sky.css" id="theme">
 
-    <!-- CSS overrides -->
-    <link rel="stylesheet" href="css/style.css">
+		<!-- CSS overrides -->
+		<link rel="stylesheet" href="css/style.css">
 
 		<!-- Code syntax highlighting -->
 		<link rel="stylesheet" href="reveal.js/lib/css/zenburn.css">
@@ -40,16 +40,53 @@
 
 			<div class="slides">
 				<section id="title">
-          <h1>RIP <code>TSRMLS_CC</code></h1>
-          <h3>
-            Adam Harvey
-            <br>
-            <a href="https://twitter.com/LGnome">@LGnome</a>
-            <br>
-            <a href="http://newrelic.com">New Relic</a>
-          </h3>
+					<h1>RIP <code>TSRMLS_CC</code></h1>
+					<h3>
+						Adam Harvey
+						<br>
+						<a href="https://twitter.com/LGnome">@LGnome</a>
+						<br>
+						<a href="http://newrelic.com">New Relic</a>
+					</h3>
 				</section>
-      </div>
+
+				<section>
+					<section id="php7">
+						<h2>PHP 7</h2>
+						<aside class="notes">
+							PHP 7 came out in December 2015. It's been kept quiet, but you
+							may have heard of it.
+						</aside>
+					</section>
+
+					<section id="api-churn">
+						<h2>API churn</h2>
+						<ul>
+							<li>333 functions/macros removed</li>
+							<li>410 functions/macros added</li>
+						</ul>
+						<aside class="notes">
+							In userland, we did a good job of maintaining backward
+							compatibility, but that wasn't the case for the API exposed by
+							the Zend Engine and PHP itself. 333 functions is almost exactly
+							one quarter of the functions and macros exposed by PHP 5.6.
+						</aside>
+					</section>
+
+					<section id="api-diff">
+						<h2>API churn</h2>
+						<ul>
+							<li>516 out of 990 functions/macros differ</li>
+						</ul>
+            <aside class="notes">
+              Here's the more insidious bit: more than half of the functions
+              that kept the same name have changed. (And that excluded
+              TSRM-related noise.) Different types, different numbers of
+              parameters, different return values.
+            </aside>
+					</section>
+				</section>
+			</div>
 		</div>
 
 		<script src="reveal.js/lib/js/head.min.js"></script>
@@ -64,8 +101,8 @@
 				progress: false,
 				history: true,
 				center: true,
-        width: 1280,
-        height: 720,
+				width: 1280,
+				height: 720,
 
 				transition: 'fade', // none/fade/slide/convex/concave/zoom
 
@@ -83,4 +120,4 @@
 		</script>
 	</body>
 </html>
-<!-- vim: set nocin ai et ts=2 sw=2: -->
+<!-- vim: set nocin ai noet ts=2 sw=2: -->
