@@ -40,6 +40,7 @@
 
 			<div class="slides">
 				<section id="title">
+          <h2>Welcome to the new age</h2>
 					<h1>RIP <code>TSRMLS_CC</code></h1>
 					<h3>
 						Adam Harvey
@@ -50,7 +51,7 @@
 					</h3>
 				</section>
 
-				<section>
+				<section data-background="images/Woolly_mammoth.jpg">
 					<section id="php7">
 						<h2>PHP 7</h2>
 						<aside class="notes">
@@ -82,15 +83,57 @@
               Here's the more insidious bit: more than half of the functions
               that kept the same name have changed. (And that excluded
               TSRM-related noise.) Different types, different numbers of
-              parameters, different return values.
+              parameters, different return values. Most don't matter, but some
+              <em>really</em> do.
             </aside>
 					</section>
 				</section>
+
+        <section data-background="images/geograph-3799604-by-Peter-.jpg">
+          <section id="what-do">
+            <h2>What do?</h2>
+            <aside class="notes">
+              So, now that I've thoroughly terrified you, what do you do with
+              your PHP 4 or 5 era extension that your site relies on?
+            </aside>
+          </section>
+
+          <section id="options">
+            <h2>What do?</h2>
+            <ul>
+              <li>One way migration</li>
+              <li>Separate branches</li>
+              <li>Shared codebase</li>
+              <li class="fragment">Ignore PHP 7 and hope it goes away</li>
+            </ul>
+            <aside class="notes">
+              The way I see it, you have three real options.
+              (pause)
+              I guess there's a fourth.
+            </aside>
+          </section>
+        </section>
+
+        <section>
+          <section id="questions">
+            <h1>Thank you!</h1>
+            <h2>Questions?</h2>
+						<a href="https://twitter.com/LGnome">@LGnome</a>
+          </section>
+
+          <section id="image-credits">
+            <h2>Image credits</h2>
+            <div></div>
+          </section>
+        </section>
 			</div>
 		</div>
 
 		<script src="reveal.js/lib/js/head.min.js"></script>
 		<script src="reveal.js/js/reveal.js"></script>
+
+    <script src="js/jquery-2.2.0.min.js"></script>
+    <script src="js/images.js"></script>
 
 		<script>
 
@@ -116,6 +159,8 @@
 					{ src: 'reveal.js/plugin/notes/notes.js', async: true }
 				]
 			});
+
+      $("#image-credits > div").imageCredits();
 
 		</script>
 	</body>
