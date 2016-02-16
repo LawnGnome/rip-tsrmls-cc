@@ -20,6 +20,12 @@ Advantage: support both
 
 Disadvantage: double the work unless you have the thinnest of thin wrappers
 
+## Shared codebase
+
+Advantage: support both; no code drift between versions
+
+Disadvantage: more complex; code becomes uglier
+
 ## Problems with shared codebases
 
 ### Parameter parsing
