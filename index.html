@@ -53,14 +53,13 @@
 
 				<section data-background="images/Woolly_mammoth.jpg">
 					<section id="php7">
-						<h2>PHP 7</h2>
 						<aside class="notes">
 							PHP 7 came out in December 2015. It's been kept quiet, but you
 							may have heard of it.
 						</aside>
 					</section>
 
-					<section id="api-churn">
+					<section id="api-churn" data-background="translucent">
 						<h2>API churn</h2>
 						<ul>
 							<li>333 functions/macros removed</li>
@@ -74,7 +73,7 @@
 						</aside>
 					</section>
 
-					<section id="api-diff">
+					<section id="api-diff" data-background="translucent">
 						<h2>API churn</h2>
 						<ul>
 							<li>516 out of 990 functions/macros differ</li>
@@ -91,14 +90,13 @@
 
         <section data-background="images/geograph-3799604-by-Peter-.jpg">
           <section id="what-do">
-            <h2>What do?</h2>
             <aside class="notes">
               So, now that I've thoroughly terrified you, what do you do with
               your PHP 4 or 5 era extension that your site relies on?
             </aside>
           </section>
 
-          <section id="options">
+          <section id="options" data-background="translucent">
             <h2>What do?</h2>
             <ul>
               <li>One way migration</li>
@@ -110,6 +108,104 @@
               The way I see it, you have three real options.
               (pause)
               I guess there's a fourth.
+            </aside>
+          </section>
+        </section>
+
+        <section data-background="images/road-street-sign-way.jpg">
+          <section id="one-way">
+          </section>
+          <aside class="notes">
+            Let's look at the pros and cons of each in turn. First up: one way
+            migration.
+          </aside>
+
+          <section id="one-way-advantages" data-background="translucent">
+            <h2>Advantages</h2>
+            <ul>
+              <li>One time cost</li>
+              <li>Conceptually simple</li>
+              <li>Cleaner code</li>
+            </ul>
+          </section>
+
+          <section id="one-way-disadvantages" data-background="translucent">
+            <h2>Disadvantages</h2>
+            <ul>
+              <li>You no longer support PHP 5</li>
+            </ul>
+            <aside class="notes">
+              Not supporting PHP 5 may not be a huge issue if you're only
+              supporting something internal: if you're planning to do a hard
+              cut over, that works. Although I'm not going to talk a lot about
+              this option as we go on, the things I highlight are also things
+              you'd want to do with this option.
+            </aside>
+          </section>
+        </section>
+
+        <section data-background="images/branches.jpg">
+          <section id="branches">
+            <aside class="notes">
+              Maintaining parallel branches is another option.
+            </aside>
+          </section>
+
+          <section id="branches-advantages" data-background="translucent">
+            <h2>Advantages</h2>
+            <ul>
+              <li>Both versions are supported</li>
+              <li>Able to write idiomatic code for both versions</li>
+            </ul>
+          </section>
+
+          <section id="branches-disadvantages" data-background="translucent">
+            <h2>Disadvantages</h2>
+            <ul>
+              <li>Maintenance is a pain</li>
+              <li>Potentially double the work</li>
+              <li>Branches may diverge over time</li>
+            </ul>
+            <aside class="notes">
+              This might work if you have almost everything abstracted away,
+              but if you do, the parts of your code that interface with PHP are
+              probably so simple anyway that you could just support both
+              versions in the one branch.
+            </aside>
+          </section>
+        </section>
+
+        <section data-background="images/hammer.jpg">
+          <section id="shared">
+            <aside class="notes">
+              Finally (excluding ignoring PHP 7), you can run a shared codebase.
+            </aside>
+          </section>
+
+          <section id="shared-advantages" data-background="translucent">
+            <h2>Advantages</h2>
+            <ul>
+              <li>Both versions are supported</li>
+              <li>Less maintenance overhead</li>
+              <li>Happy users</li>
+            </ul>
+            <aside class="notes">
+              Happy users because they can just download the latest release; cf
+              memcached.
+            </aside>
+          </section>
+
+          <section id="shared-disadvantages" data-background="translucent">
+            <h2>Disadvantages</h2>
+            <ul>
+              <li>So many API changes</li>
+            </ul>
+            <aside class="notes">
+              I'm going to delve deeper into this. There are ways you can
+              mitigate the API changes &mdash; how hard it is depends a lot on
+              what type of extension you're writing. Simple C library wrappers:
+              not too bad. Deep voodoo magic extensions: bad (but still
+              doable).
             </aside>
           </section>
         </section>

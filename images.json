@@ -11,8 +11,25 @@
     "author": "Peter",
     "title": "Route choices at the hamlet of Dunsmore"
   },
+  "one-way": {
+    "licence": "CC0",
+    "source": "https://www.pexels.com/photo/road-street-sign-way-536/",
+    "author": "Ryan McGuire",
+    "title": "One Way"
+  },
+  "branches": {
+    "licence": "CC-BY 4.0",
+    "author": "Adam Harvey",
+    "title": "Daphne on Northerly Island"
+  },
+  "shared": {
+    "licence": "CC-BY 2.0",
+    "source": "https://www.flickr.com/photos/raindrift/7095238893/in/album-72157629492908038/",
+    "author": "Ian Baker",
+    "title": "PHP hammer"
+  },
   "": {
-    "licence": "CC-BY-SA 2.0",
+    "licence": "CC-BY 2.0",
     "source": "",
     "author": "",
     "title": ""
