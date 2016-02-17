@@ -221,11 +221,239 @@
 					</aside>
 				</section>
 
-				<section id="problems" data-background="images/fix.jpg">
-					<aside class="notes">
-						So we know that a lot changed. What do we need to look for when
-						migrating an extension?
-					</aside>
+				<section data-background="images/fix.jpg">
+					<section id="problems">
+						<aside class="notes">
+							So we know that a lot changed. What do we need to look for when
+							migrating an extension?
+						</aside>
+					</section>
+
+					<section id="zval" data-background="translucent">
+						<h2><code>zval</code></h2>
+						<aside class="notes">
+							Let's start from the inside and work our way out. Many of the
+							changes that matter when working on an extension are
+							fundamentally type-related, so let's start with the type that
+							underpins all of PHP.
+						</aside>
+					</section>
+
+					<section id="zval-struct" data-background="translucent">
+						<pre><code class="c" data-trim>
+typedef struct {
+	zend_uchar type;
+	zend_uint  refcount__gc;
+	zend_uchar is_ref__gc;
+	union {
+		long lval;
+		double dval;
+		struct {
+			char *val;
+			int len;
+		} str;
+		HashTable *ht;
+		zend_object_value obj;
+	} value;
+} zval;
+						</code></pre>
+						<aside class="notes">
+							Here's a simplified version of what the zval struct looks like in
+							PHP 5. The important thing to remember is that each type
+							corresponds to a member in the value union. Many of these values
+							have changed: either in structure or in type.
+						</aside>
+					</section>
+
+					<section id="zval-struct7" data-background="translucent">
+						<pre><code class="c" data-trim>
+typedef struct {
+	zend_value value;
+	union {
+		struct {
+			zend_uchar type;
+			...
+		}
+	}
+} zval;
+						</code></pre>
+						<aside class="notes">
+							Here's a simplified version of the PHP 7 zval. We'll talk about
+							the specifics of the types that have changed representation after
+							this, but I want you to note that the refcount and is_ref fields
+							are gone. zvals are passed around by value rather than reference,
+							so simple types don't need to be refcounted, and types that do
+							need to be are refcounted within their values rather than the
+							zval itself.
+						</aside>
+					</section>
+
+					<section id="zval-long" data-background="translucent">
+						<h2><code>IS_LONG</code></h2>
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+long lval;
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+zend_long lval;
+
+#if defined(__LP64__) || defined(_LP64) || defined(_WIN64)
+typedef int64_t zend_long;
+#else
+typedef int32_t zend_long;
+#endif
+						</code></pre>
+						<aside class="notes">
+							Integers are now this zend_long type, which means that integers
+							are now consistently 64 bit on all 64 bit platforms, including
+							Windows (which used to be an oddball).
+						</aside>
+					</section>
+
+					<section id="zval-bool" data-background="translucent">
+						<h2><code>IS_BOOL</code></h2>
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+long lval;
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+#define IS_FALSE 2
+#define IS_TRUE  3
+
+ZEND_API int zend_is_true(zval *op);
+						</code></pre>
+						<aside class="notes">
+							IS_BOOL is gone altogether! In PHP 5, it used the lval to
+							indicate whether it was true or false. In PHP 7, false and true
+							are separate types. The ZVAL_BOOL macro still exists for setting,
+							but to check the value you either have to check the type or call
+							zend_is_true().
+						</aside>
+					</section>
+
+					<section id="zval-string" data-background="translucent">
+						<h2><code>IS_STRING</code></h2>
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+struct {
+	char *val;
+	int len;
+} str;
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+zend_string *str;
+						</code></pre>
+						<aside class="notes">
+							I'm going to come back to this zend_string structure shortly. The
+							Zend Engine has retained the Z_STRLEN and Z_STRVAL macros, but
+							there's now a string structure that gets used throughout the
+							engine, not just for zvals. One thing to know right now: lengths
+							are now size_t, not int.
+						</aside>
+					</section>
+
+					<section id="zval-object" data-background="translucent">
+						<h2><code>IS_OBJECT</code></h2>
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+zend_object_value obj;
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+zend_object *obj;
+						</code></pre>
+						<aside class="notes">
+							Another new type! Again, I'll come back to zend_object, but the
+							important thing to note is that it's now just a pointer, rather
+							than a small inline structure with an index into another
+							hashtable.
+						</aside>
+					</section>
+
+					<section id="zval-resource" data-background="translucent">
+						<h2><code>IS_RESOURCE</code></h2>
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+long lval;
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+zend_resource *res;
+						</code></pre>
+						<aside class="notes">
+							Similarly, resources change from being indexes stored in the long
+							value to being pointers to their own structures, which I'll
+							describe more fully in a bit.
+						</aside>
+					</section>
+
+					<section id="zval-new-types" data-background="translucent">
+						<pre><code class="c" data-trim>
+#define IS_UNDEF     0
+
+#define IS_REFERENCE 10
+zend_reference *ref;
+						</code></pre>
+						<aside class="notes">
+							Finally, there are a bunch of new types. The two that are
+							important are UNDEF, which is for undefined variables (as the
+							name might suggest), and REFERENCE, which replaces the built in
+							is_ref field in the zval with a pointer to a refcounted
+							structure (remembering the earlier point about not having
+							refcounting in the zval itself).
+						</aside>
+					</section>
+				</section>
+
+				<section data-background="red">
+					<section id="parameter-parsing">
+						<aside class="notes">
+							One area where this matters is parameter parsing. If you continue
+							giving the old types to zend_parse_parameters, particularly with
+							strings, you'll end up with garbage because type sizes have
+							changed.
+						</aside>
+					</section>
+
+					<section id="zpp-string" background="translucent">
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+char *str;
+int len;
+
+zend_parse_parameters(ZEND_NUM_ARGS(), "s", &amp;str, &amp;len);
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+char *str;
+size_t len;
+
+zend_parse_parameters(ZEND_NUM_ARGS(), "s", &amp;str, &amp;len);
+						</code></pre>
+						<aside class="notes">
+							For example: as I mentioned earlier, string lengths are now
+							size_t. If you don't change the length variable to size_t, you
+							get interesting looking segfaults on 64 bit platforms. This one's
+							insidious.
+						</aside>
+					</section>
+
+					<section id="zpp-string-options" background="translucent">
+						<pre><code class="c" data-trim>
+#if ZEND_MODULE_API_NO &gt;= 20151012
+typedef size_t zend_string_len_t;
+#else
+typedef int zend_string_len_t;
+#endif
+						</code></pre>
+						<aside class="notes">
+							How do you deal with this if you want to support both versions?
+							You can do some macro and typedef magic.
+						</aside>
+					</section>
 				</section>
 
         <section>

@@ -1,6 +1,23 @@
 @import url(../fonts/fonts.css);
 
 /* Generic styling. */
+.reveal {
+  font-family: Lato, sans-serif;
+  font-size: 3em;
+}
+
+.reveal h1 {
+  font-size: 2em;
+}
+
+.reveal h2 {
+  font-size: 1.75em;
+}
+
+.reveal h3 {
+  font-size: 1.1em;
+}
+
 .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
   font-family: Lato, sans-serif;
   letter-spacing: 0;
@@ -9,6 +26,12 @@
 
 .reveal code {
   font-family: Inconsolata, monospace;
+}
+
+.reveal pre code {
+  font-size: 1.3em;
+  line-height: 1.4;
+  max-height: 40em;
 }
 
 .reveal ul {
