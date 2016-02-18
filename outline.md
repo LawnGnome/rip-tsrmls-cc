@@ -85,3 +85,5 @@ It's not all bad. Let's look at the awesome stuff you get with PHP 7 only extens
 ### New parameter parsing APIs
 
 ### Hash table iteration
+
+### TSRMLS is gone!

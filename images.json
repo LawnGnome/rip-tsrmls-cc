@@ -28,11 +28,23 @@
     "author": "Ian Baker",
     "title": "PHP hammer"
   },
-  "": {
+  "problems": {
     "licence": "CC-BY 2.0",
     "source": "https://flic.kr/p/ekEBbH",
     "author": "JD Hancock",
     "title": "The Fix Is In"
+  },
+  "parameter-parsing": {
+    "licence": "CC-BY 2.0",
+    "source": "https://flic.kr/p/iU5GG1",
+    "author": "lendingmemo.com",
+    "title": "Audit"
+  },
+  "arrays": {
+    "licence": "CC-BY-SA 2.0",
+    "source": "https://flic.kr/p/5pWFxi",
+    "author": "theregeneration",
+    "title": "Solar Array - Nellis AFB"
   },
   "": {
     "licence": "CC-BY 2.0",

@@ -225,9 +225,11 @@
 					<aside class="notes">
 						Whatever you choose, the best thing to start is by trying to build
 						your extension. It <em>will</em> fail, but the compiler errors will
-						guide you pretty well for a lot of things. Still, that won't pick
-						up everything, and there are things that you're better off knowing
-						about in advance. So let's get into it.
+						guide you pretty well for a lot of things, and once you clear them
+						up you can use your test suite to catch the rest. (You have tests,
+						right?) Still, that won't pick up everything, and there are things
+						that you're better off knowing about in advance. So let's get into
+						it.
 					</aside>
 				</section>
 
@@ -519,16 +521,16 @@ zend_reference *ref;
 					</section>
 				</section>
 
-				<section data-background="red">
+				<section data-background="images/audit.jpg">
 					<section id="parameter-parsing">
 						<aside class="notes">
-							We'll start with parameter parsing.  If you continue giving the
-							old types to zend_parse_parameters, particularly with strings,
-							you'll end up with garbage because type sizes have changed.
+							Let's look at more concrete things you need to audit. We'll start
+							with parameter parsing, since that's not going to be caught by
+							the compiler.
 						</aside>
 					</section>
 
-					<section id="zpp-string" background="translucent">
+					<section id="zpp-string" data-state="translucent" data-background="translucent">
 						<h3>PHP 5</h3>
 						<pre><code class="c" data-trim>
 char *str;
@@ -551,7 +553,7 @@ zend_parse_parameters(ZEND_NUM_ARGS(), "s", &amp;str, &amp;len);
 						</aside>
 					</section>
 
-					<section id="zpp-string-options" background="translucent">
+					<section id="zpp-string-options" data-state="translucent" data-background="translucent">
 						<pre><code class="c" data-trim>
 #if ZEND_MODULE_API_NO &gt;= 20151012
 typedef size_t zend_string_len_t;
@@ -569,7 +571,7 @@ zend_parse_parameters(ZEND_NUM_ARGS(), "s", &amp;str, &amp;len);
 						</aside>
 					</section>
 
-					<section id="zpp-long" background="translucent">
+					<section id="zpp-long" data-state="translucent" data-background="translucent">
 						<pre><code class="c" data-trim>
 #if ZEND_MODULE_API_NO &lt; 20151012
 typedef long zend_long;
@@ -583,7 +585,7 @@ zend_parse_parameters(ZEND_NUM_ARGS(), "l", &amp;l);
 						</aside>
 					</section>
 
-					<section id="string-duplication" background="translucent">
+					<section id="string-duplication" data-state="translucent" data-background="translucent">
 						<h3>PHP 5</h3>
 						<pre><code class="c" data-trim>
 RETURN_STRING(str, duplicate)
@@ -606,7 +608,7 @@ add_assoc_string(zv, key, str)
 						</aside>
 					</section>
 
-					<section id="string-duplication-options" background="translucent">
+					<section id="string-duplication-options" data-state="translucent" data-background="translucent">
 						<pre><code class="c" data-trim>
 #if ZEND_MODULE_API_NO &lt; 20151012
 
@@ -631,7 +633,7 @@ add_assoc_string(zv, key, str)
 						</aside>
 					</section>
 
-					<section id="string-duplication-list" background="translucent">
+					<section id="string-duplication-list" data-state="translucent" data-background="translucent">
 						<pre><code class="c" data-trim>
 ZVAL_STRING
 ZVAL_STRINGL
@@ -647,6 +649,51 @@ add_assoc_stringl
 							macros I know about that are problematic. You need to audit all
 							uses of these.
 						</aside>
+					</section>
+				</section>
+
+				<section data-background="images/array.jpg">
+					<section id="arrays">
+						<aside class="notes">
+							Arrays aren't hugely different, but there are two changes of
+							note, and one will bite you silently if you're not careful.
+						</aside>
+					</section>
+
+					<section id="array-keys" data-state="translucent" data-background="translucent">
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+zend_hash_update(ht, "key", 4, &amp;zv, sizeof(zval *), NULL);
+zend_hash_find(ht, "key", 4, &amp;zv);
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+zend_string *key = zend_string_init("key", 3, 0);
+
+zend_hash_update(ht, key, zv);
+zv = zend_hash_find(ht, key);
+
+zend_string_release(key);
+						</code></pre>
+						<aside class="notes">
+							This is a good'un. Array keys in PHP 5 included the null
+							terminator in their length because&hellip; hell if I know. In PHP
+							7, they don't (partly because we're using zend_strings).
+						</aside>
+					</section>
+				</section>
+
+				<section data-background="red">
+					<section id="resources">
+						<aside class="notes">
+							Let's talk about resources, those weird holdovers from the old
+							days. As I mentioned earlier, they're actually a fair bit nicer to use, but 
+						</aside>
+					</section>
+				</section>
+
+				<section data-background="red">
+					<section id="objects">
 					</section>
 				</section>
 
