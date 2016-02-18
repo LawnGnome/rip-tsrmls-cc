@@ -74,6 +74,7 @@ Huge pain. Parameters went from `zval **` to `zval`!
 ## Tools
 
 https://github.com/flaupretre/pecl-compat
+lxr
 
 ## Improvements
 

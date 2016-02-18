@@ -46,9 +46,14 @@
 }
 
 /* Background styles. */
+.fit .reveal div.slide-background.present {
+  background-size: contain;
+  background-color: white;
+}
 
 /* Support a "translucent" background that puts the default gradient over the
- * top. */
+ * top. This is done using a fake background rather than data-state because
+ * using data-state removes the translucency when switching slides. */
 .backgrounds div[data-background-hash^="translucent"].slide-background.present {
   opacity: 0.85;
   background: -moz-radial-gradient(center, circle cover, #f7fbfc 0%, #add9e4 100%);
@@ -58,6 +63,11 @@
   background: -ms-radial-gradient(center, circle cover, #f7fbfc 0%, #add9e4 100%);
   background: radial-gradient(center, circle cover, #f7fbfc 0%, #add9e4 100%);
   background-color: #f7fbfc;
+}
+
+/* We will use data-state to blur the background, though. */
+.translucent .reveal div.slide-background.present.stack {
+  -webkit-filter: blur(10px);
 }
 
 /* Slides with specific background images have their opacity crunched down. */

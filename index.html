@@ -59,7 +59,7 @@
 						</aside>
 					</section>
 
-					<section id="api-churn" data-background="translucent">
+					<section id="api-churn" data-state="translucent" data-background="translucent">
 						<h2>API churn</h2>
 						<ul>
 							<li>333 functions/macros removed</li>
@@ -73,7 +73,7 @@
 						</aside>
 					</section>
 
-					<section id="api-diff" data-background="translucent">
+					<section id="api-diff" data-state="translucent" data-background="translucent">
 						<h2>API churn</h2>
 						<ul>
 							<li>516 out of 990 functions/macros differ</li>
@@ -96,7 +96,7 @@
             </aside>
           </section>
 
-          <section id="options" data-background="translucent">
+          <section id="options" data-state="translucent" data-background="translucent">
             <h2>What do?</h2>
             <ul>
               <li>One way migration</li>
@@ -120,7 +120,7 @@
             migration.
           </aside>
 
-          <section id="one-way-advantages" data-background="translucent">
+          <section id="one-way-advantages" data-state="translucent" data-background="translucent">
             <h2>Advantages</h2>
             <ul>
               <li>One time cost</li>
@@ -129,7 +129,7 @@
             </ul>
           </section>
 
-          <section id="one-way-disadvantages" data-background="translucent">
+          <section id="one-way-disadvantages" data-state="translucent" data-background="translucent">
             <h2>Disadvantages</h2>
             <ul>
               <li>You no longer support PHP 5</li>
@@ -151,7 +151,7 @@
             </aside>
           </section>
 
-          <section id="branches-advantages" data-background="translucent">
+          <section id="branches-advantages" data-state="translucent" data-background="translucent">
             <h2>Advantages</h2>
             <ul>
               <li>Both versions are supported</li>
@@ -159,7 +159,7 @@
             </ul>
           </section>
 
-          <section id="branches-disadvantages" data-background="translucent">
+          <section id="branches-disadvantages" data-state="translucent" data-background="translucent">
             <h2>Disadvantages</h2>
             <ul>
               <li>Maintenance is a pain</li>
@@ -182,7 +182,7 @@
             </aside>
           </section>
 
-          <section id="shared-advantages" data-background="translucent">
+          <section id="shared-advantages" data-state="translucent" data-background="translucent">
             <h2>Advantages</h2>
             <ul>
               <li>Both versions are supported</li>
@@ -195,7 +195,7 @@
             </aside>
           </section>
 
-          <section id="shared-disadvantages" data-background="translucent">
+          <section id="shared-disadvantages" data-state="translucent" data-background="translucent">
             <h2>Disadvantages</h2>
             <ul>
               <li>So many API changes</li>
@@ -221,6 +221,16 @@
 					</aside>
 				</section>
 
+				<section data-state="fit" id="compile-it" data-background="images/build.png">
+					<aside class="notes">
+						Whatever you choose, the best thing to start is by trying to build
+						your extension. It <em>will</em> fail, but the compiler errors will
+						guide you pretty well for a lot of things. Still, that won't pick
+						up everything, and there are things that you're better off knowing
+						about in advance. So let's get into it.
+					</aside>
+				</section>
+
 				<section data-background="images/fix.jpg">
 					<section id="problems">
 						<aside class="notes">
@@ -229,7 +239,7 @@
 						</aside>
 					</section>
 
-					<section id="zval" data-background="translucent">
+					<section id="zval" data-state="translucent" data-background="translucent">
 						<h2><code>zval</code></h2>
 						<aside class="notes">
 							Let's start from the inside and work our way out. Many of the
@@ -239,7 +249,7 @@
 						</aside>
 					</section>
 
-					<section id="zval-struct" data-background="translucent">
+					<section id="zval-struct" data-state="translucent" data-background="translucent">
 						<pre><code class="c" data-trim>
 typedef struct {
 	zend_uchar type;
@@ -265,7 +275,7 @@ typedef struct {
 						</aside>
 					</section>
 
-					<section id="zval-struct7" data-background="translucent">
+					<section id="zval-struct7" data-state="translucent" data-background="translucent">
 						<pre><code class="c" data-trim>
 typedef struct {
 	zend_value value;
@@ -288,7 +298,7 @@ typedef struct {
 						</aside>
 					</section>
 
-					<section id="zval-long" data-background="translucent">
+					<section id="zval-long" data-state="translucent" data-background="translucent">
 						<h2><code>IS_LONG</code></h2>
 						<h3>PHP 5</h3>
 						<pre><code class="c" data-trim>
@@ -307,11 +317,13 @@ typedef int32_t zend_long;
 						<aside class="notes">
 							Integers are now this zend_long type, which means that integers
 							are now consistently 64 bit on all 64 bit platforms, including
-							Windows (which used to be an oddball).
+							Windows (which used to be an oddball). This is good, but think
+							about what happens if you're on Win64 and use long (which is 32
+							bit) with zend_parse_parameters().
 						</aside>
 					</section>
 
-					<section id="zval-bool" data-background="translucent">
+					<section id="zval-bool" data-state="translucent" data-background="translucent">
 						<h2><code>IS_BOOL</code></h2>
 						<h3>PHP 5</h3>
 						<pre><code class="c" data-trim>
@@ -333,7 +345,7 @@ ZEND_API int zend_is_true(zval *op);
 						</aside>
 					</section>
 
-					<section id="zval-string" data-background="translucent">
+					<section id="zval-string" data-state="translucent" data-background="translucent">
 						<h2><code>IS_STRING</code></h2>
 						<h3>PHP 5</h3>
 						<pre><code class="c" data-trim>
@@ -347,18 +359,62 @@ struct {
 zend_string *str;
 						</code></pre>
 						<aside class="notes">
-							I'm going to come back to this zend_string structure shortly. The
-							Zend Engine has retained the Z_STRLEN and Z_STRVAL macros, but
-							there's now a string structure that gets used throughout the
-							engine, not just for zvals. One thing to know right now: lengths
-							are now size_t, not int.
+							Let's talk about a more interesting one. Three types are now
+							pointers to other structures with their own garbage collection.
+							The Zend Engine has retained the Z_STRLEN and Z_STRVAL macros,
+							but there's now a string structure that gets used throughout the
+							engine, not just for zvals. Let's look at it in more detail...
 						</aside>
 					</section>
 
-					<section id="zval-object" data-background="translucent">
+					<section id="zend-string-struct" data-state="translucent" data-background="translucent">
+						<h2><code>zend_string</code></h2>
+						<pre><code class="c" data-trim>
+typedef struct {
+	zend_refcounted_h gc;
+	zend_ulong        h;
+	size_t            len;
+	char              val[1];
+} zend_string;
+						</code></pre>
+						<aside class="notes">
+							Key points: lengths are now size_t, not signed int, as $DEITY
+							intended. Garbage collection now takes place within the
+							structure. h is a cached hash value.
+						</aside>
+					</section>
+
+					<section id="zend-string-api" data-state="translucent" data-background="translucent">
+						<h2><code>zend_string</code></h2>
+						<pre><code class="c" data-trim>
+zend_string *zend_string_alloc(size_t len, int persistent);
+zend_string *zend_string_init(const char *s, size_t len, int pers);
+zend_string *zend_string_dup(zend_string *s, int persistent);
+void zend_string_release(zend_string *s);
+
+uint32_t zend_string_addref(zend_string *s);
+uint32_t zend_string_delref(zend_string *s);
+
+#define ZSTR_VAL(zstr)  (zstr)-&gt;val
+#define ZSTR_LEN(zstr)  (zstr)-&gt;len
+						</code></pre>
+						<aside class="notes">
+							A new set of functions have been added to deal with zend_strings.
+							These are the most important ones (the full set is in
+							zend_string.h). Again, note that reference counting is done on
+							the string, not the zval, so it has "methods" to deal with that.
+						</aside>
+					</section>
+
+					<section id="zval-object" data-state="translucent" data-background="translucent">
 						<h2><code>IS_OBJECT</code></h2>
 						<h3>PHP 5</h3>
 						<pre><code class="c" data-trim>
+typedef struct {
+	zend_object_handle handle;
+	const zend_object_handlers *handlers;
+} zend_object_value;
+
 zend_object_value obj;
 						</code></pre>
 						<h3>PHP 7</h3>
@@ -366,14 +422,36 @@ zend_object_value obj;
 zend_object *obj;
 						</code></pre>
 						<aside class="notes">
-							Another new type! Again, I'll come back to zend_object, but the
-							important thing to note is that it's now just a pointer, rather
-							than a small inline structure with an index into another
-							hashtable.
+							Another new type! I'm going to talk more about class and object
+							handling later, but let's focus for now on the representation. In
+							PHP 5, zend_object_value is a small inline structure with an
+							object handle, which is an index into a hash table.
 						</aside>
 					</section>
 
-					<section id="zval-resource" data-background="translucent">
+					<section id="zend-object" data-state="translucent" data-background="translucent">
+						<h2><code>zend_object</code></h2>
+						<pre><code class="c" data-trim>
+typedef struct {
+	zend_refcounted_h           gc;
+	uint32_t                    handle;
+	zend_class_entry           *ce;
+	const zend_object_handlers *handlers;
+	HashTable                  *properties;
+	zval                        properties_table[1];
+} zend_object;
+						</code></pre>
+						<aside class="notes">
+							This is a structure that it's probably rare that you'll poke
+							directly, but again: refcounting is done on the object. The class
+							entry and properties are now inline, which improves caching and
+							performance. Note that this is variable length, though: this is
+							important if you're overriding the create_object handler. I won't
+							get into the API, because it hasn't changed much.
+						</aside>
+					</section>
+
+					<section id="zval-resource" data-state="translucent" data-background="translucent">
 						<h2><code>IS_RESOURCE</code></h2>
 						<h3>PHP 5</h3>
 						<pre><code class="c" data-trim>
@@ -384,13 +462,46 @@ long lval;
 zend_resource *res;
 						</code></pre>
 						<aside class="notes">
-							Similarly, resources change from being indexes stored in the long
-							value to being pointers to their own structures, which I'll
-							describe more fully in a bit.
+							Finally, resources change from being indexes stored in the long
+							value to being pointers to their own structures.
 						</aside>
 					</section>
 
-					<section id="zval-new-types" data-background="translucent">
+					<section id="zend-resource" data-state="translucent" data-background="translucent">
+						<h2><code>zend_resource</code></h2>
+						<pre><code class="c" data-trim>
+typedef struct {
+	zend_refcounted_h gc;
+	int               handle;
+	int               type;
+	void             *ptr;
+};
+						</code></pre>
+						<aside class="notes">
+							This one's actually a huge improvement: the resource type is now
+							kept inline.
+						</aside>
+					</section>
+
+					<section id="zend-resource-api" data-state="translucent" data-background="translucent">
+						<h2><code>zend_resource</code></h2>
+						<pre><code class="c" data-trim>
+zend_resource *zend_register_resource(void *ptr, int type);
+void *zend_fetch_resource_ex(zend_resource *res, const char *name,
+                             int type);
+int zend_list_close(zend_resource *res);
+						</code></pre>
+						<aside class="notes">
+							Again, there's a new set of functions to handle resources, which
+							mostly replace macros. Annoyingly, they're incompatible with the
+							old ones, which poses a significant challenge if you're trying to
+							support both PHP 5 and PHP 7: you're either going to have to
+							write abstraction code in your extension, or pick up a
+							compatibility library.
+						</aside>
+					</section>
+
+					<section id="zval-new-types" data-state="translucent" data-background="translucent">
 						<pre><code class="c" data-trim>
 #define IS_UNDEF     0
 
@@ -411,10 +522,9 @@ zend_reference *ref;
 				<section data-background="red">
 					<section id="parameter-parsing">
 						<aside class="notes">
-							One area where this matters is parameter parsing. If you continue
-							giving the old types to zend_parse_parameters, particularly with
-							strings, you'll end up with garbage because type sizes have
-							changed.
+							We'll start with parameter parsing.  If you continue giving the
+							old types to zend_parse_parameters, particularly with strings,
+							you'll end up with garbage because type sizes have changed.
 						</aside>
 					</section>
 
@@ -448,10 +558,94 @@ typedef size_t zend_string_len_t;
 #else
 typedef int zend_string_len_t;
 #endif
+
+char *str;
+zend_string_len_t len;
+zend_parse_parameters(ZEND_NUM_ARGS(), "s", &amp;str, &amp;len);
 						</code></pre>
 						<aside class="notes">
 							How do you deal with this if you want to support both versions?
 							You can do some macro and typedef magic.
+						</aside>
+					</section>
+
+					<section id="zpp-long" background="translucent">
+						<pre><code class="c" data-trim>
+#if ZEND_MODULE_API_NO &lt; 20151012
+typedef long zend_long;
+#endif
+
+zend_long l;
+zend_parse_parameters(ZEND_NUM_ARGS(), "l", &amp;l);
+						</code></pre>
+						<aside class="notes">
+							I'd do something similar for zend_long too.
+						</aside>
+					</section>
+
+					<section id="string-duplication" background="translucent">
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+RETURN_STRING(str, duplicate)
+ZVAL_STRING(zv, str, duplicate)
+add_assoc_string(zv, key, str, duplicate)
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+RETURN_STRING(str)
+ZVAL_STRING(zv, str)
+add_assoc_string(zv, key, str)
+						</code></pre>
+						<aside class="notes">
+							Coming back to strings, most macros and functions that dealt with
+							setting strings had parameters indicating whether you wanted to
+							duplicate the input. Those are now gone, since they have to
+							create a zend_string anyway and will always duplicate. You can
+							override this by instantiating the string directly using the
+							zend_string API, but why would you?
+						</aside>
+					</section>
+
+					<section id="string-duplication-options" background="translucent">
+						<pre><code class="c" data-trim>
+#if ZEND_MODULE_API_NO &lt; 20151012
+
+#undef ZVAL_STRING
+#define ZVAL_STRING(zv, str) do {             \
+	const char *__s = (s);                \
+	int __l = strlen(str);                \
+	zval *__z = (zv);                     \
+	Z_STRLEN_P(__z) = l;                  \
+	Z_STRVAL_P(__z) = estrndup(__s, __l); \
+} while (0);
+
+#endif
+						</code></pre>
+						<aside class="notes">
+							Again, if you're supporting both versions, your options are kind
+							of problematic. You're going to have to have compatibility
+							wrappers or redefine the macros (my preference, but make sure you
+							do it after including all PHP headers!). The downside is that
+							it's ugly (and there's eight of them), although you can basically
+							crib the implementations from the PHP 5.6 source.
+						</aside>
+					</section>
+
+					<section id="string-duplication-list" background="translucent">
+						<pre><code class="c" data-trim>
+ZVAL_STRING
+ZVAL_STRINGL
+RETURN_STRING
+RETURN_STRINGL
+RETVAL_STRING
+RETVAL_STRINGL
+add_assoc_string
+add_assoc_stringl
+						</code></pre>
+						<aside class="notes">
+							Basically, if you're looking for a cheat sheet, these are the
+							macros I know about that are problematic. You need to audit all
+							uses of these.
 						</aside>
 					</section>
 				</section>
