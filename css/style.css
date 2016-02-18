@@ -68,6 +68,10 @@
 /* We will use data-state to blur the background, though. */
 .translucent .reveal div.slide-background.present.stack {
   -webkit-filter: blur(10px);
+  -moz-filter: blur(10px);
+  -ms-filter: blur(10px);
+  -o-filter: blur(10px);
+  filter: blur(10px);
 }
 
 /* Slides with specific background images have their opacity crunched down. */
