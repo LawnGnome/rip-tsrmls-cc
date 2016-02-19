@@ -687,10 +687,10 @@ compat_zend_hash_find(HashTable *ht, const char *key, size_t len) {
 						<aside class="notes">
 							This one's tricky to shim between versions. So far, everyone I've
 							seen who's done it has written wrappers with different names
-							&amp; you can add the _ptr functions easily enough to PHP 5, but
-							that doesn't help with the other API changes. You need to audit
-							all zend_hash function calls and figure out if you want to DIY or
-							pull in a compatibility helper.
+							&mdash; you can add the _ptr functions easily enough to PHP 5,
+							but that doesn't help with the other API changes. You need to
+							audit all zend_hash function calls and figure out if you want to
+							DIY or pull in a compatibility helper.
 						</aside>
 					</section>
 
