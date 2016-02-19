@@ -732,6 +732,50 @@ compat_zend_hash_find(HashTable *ht, const char *key, size_t len) {
 							pull in a compatibility helper.
 						</aside>
 					</section>
+
+					<section id="hashtable-iteration" data-state="translucent" data-background="translucent">
+						<pre><code class="c" data-trim>
+HashPosition pos;
+ulong num_key;
+char *key;
+uint key_len;
+zval **zv_pp;
+
+zend_hash_internal_pointer_reset_ex(&amp;ht, &amp;pos);
+while (zend_hash_get_current_data_ex(&amp;ht, &amp;zv_pp, &amp;pos)
+       == SUCCESS) {
+	if (zend_hash_get_current_key_ex(&amp;ht, &amp;key, &amp;key_len,
+	                                 &amp;num_key, 0, &amp;pos) ==
+	                                 HASH_KEY_IS_STRING) {
+		...
+	}
+}
+						</code></pre>
+						<aside class="notes">
+							One amazing new feature that I want to highlight, even though
+							it's not directly a migration topic: HashTables now have these
+							incredible iteration macros. If you've had to iterate an array
+							before, you'll understand why this is a big deal. Here's the old
+							code...
+						</aside>
+					</section>
+
+					<section id="hashtable-iteration7" data-state="translucent" data-background="translucent">
+						<pre><code class="c" data-trim>
+ulong num_key;
+zend_string *key;
+zval *zv;
+
+ZEND_HASH_FOREACH_KEY_VAL(ht, num_key, key, val) {
+	if (key) {
+		...
+	}
+}
+						</code></pre>
+						<aside class="notes">
+							Here's the new.
+						</aside>
+					</section>
 				</section>
 
 				<section data-background="images/resources.jpg">
@@ -798,6 +842,88 @@ int zend_list_close(zend_resource *res);
 
 				<section data-background="red">
 					<section id="objects">
+						<aside class="notes">
+							Let's talk about objects. Basic object handling is largely
+							unchanged, mercifully.
+						</aside>
+					</section>
+
+					<section id="properties" data-state="translucent" data-background="translucent">
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+zval *zv;
+
+zv = zend_read_property(ce, obj, name, strlen(name), 0);
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+zval rv;
+zval *zv;
+
+zv = zend_read_property(ce, obj, name, strlen(name), 0, &amp;rv);
+						</code></pre>
+						<aside class="notes">
+							The one API that has changed a bit is reading properties. In PHP
+							7, you have to provide the storage for the returned value (this
+							is only used if there's a __get method or a custom read_property,
+							and you should use the return value "zv" and not access "rv").
+						</aside>
+					</section>
+
+					<section id="properties-options" data-state="translucent" data-background="translucent">
+						<pre><code class="c" data-trim>
+inline static zval *
+compat_zend_read_property(zend_class_entry *ce, zval *obj,
+                          const char *name, int name_length,
+                          int silent, zval *rv TSRMLS_DC) {
+#if ZEND_MODULE_API_NO &gt;= 20151012
+	return zend_read_property(ce, obj, name, name_length,
+	                          silent, rv);
+#else
+	(void) rv;
+	return zend_read_property(ce, obj, name, name_length,
+	                          silent TSRMLS_CC);
+#endif
+}
+						</code></pre>
+						<aside class="notes">
+							As zend_read_property isn't a macro, you'll have to add a shim.
+							I'd go with a little inline function or macro.
+						</aside>
+					</section>
+				</section>
+
+				<section data-background="red">
+					<section id="custom-objects">
+						<aside class="notes">
+							As I mentioned earlier, there is a difference with objects with
+							custom allocators because the zend_object struct is variable
+							length (to cope with properties).
+						</aside>
+					</section>
+				</section>
+
+				<section data-background="red">
+					<section id="calling">
+						Calling back into PHP.
+						<aside class="notes">
+						</aside>
+					</section>
+				</section>
+
+				<section data-background="red">
+					<section id="calling">
+						TSRMLS.
+						<aside class="notes">
+						</aside>
+					</section>
+				</section>
+
+				<section data-background="red">
+					<section id="calling">
+						Tools and references.
+						<aside class="notes">
+						</aside>
 					</section>
 				</section>
 
