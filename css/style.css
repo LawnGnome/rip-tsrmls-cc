@@ -50,8 +50,7 @@
 }
 
 /* Background styles. */
-.fit .reveal div.slide-background.present {
-  background-size: contain;
+.white-bg .reveal div.slide-background.present {
   background-color: white;
 }
 
