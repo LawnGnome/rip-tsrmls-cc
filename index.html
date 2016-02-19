@@ -451,8 +451,9 @@ add_assoc_string(zv, key, str)
 							of problematic. You're going to have to have compatibility
 							wrappers or redefine the macros (my preference, but make sure you
 							do it after including all PHP headers!). The downside is that
-							it's ugly (and there's eight of them), although you can basically
-							crib the implementations from the PHP 5.6 source.
+							it's ugly, but you can basically crib the implementations from
+							the PHP 5.6 source. I'm going to show you how the sausage is
+							made, but there are wrappers available for some of this.
 						</aside>
 					</section>
 
@@ -598,11 +599,7 @@ zend_parse_parameters(ZEND_NUM_ARGS(), "s", &amp;str, &amp;len);
 						</code></pre>
 						<aside class="notes">
 							How do you deal with this if you want to support both versions?
-							You can do some macro and typedef magic. (I'm going to show
-							examples of how you might do this yourself, but bear in mind that
-							there are libraries that will abstract at least some of this for
-							you in existence. It's important to know how the sausage is made,
-							but you may not have to write much of this shim code yourself.)
+							You can do some macro and typedef magic.
 						</aside>
 					</section>
 
