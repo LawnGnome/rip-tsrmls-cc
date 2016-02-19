@@ -709,7 +709,7 @@ ptr = (my_struct *) zend_hash_find_ptr(ht, key);
 
 					<section id="hashtable-options" data-state="translucent" data-background="translucent">
 						<pre><code class="c" data-trim>
-inline zval *
+zval *
 compat_zend_hash_find(HashTable *ht, const char *key, size_t len) {
 #if ZEND_MODULE_API_NO &gt;= 20151012
 	zend_string *zs = zend_string_init(key, len);
@@ -840,7 +840,7 @@ int zend_list_close(zend_resource *res);
 					</section>
 				</section>
 
-				<section data-background="red">
+				<section data-background="images/object.jpg">
 					<section id="objects">
 						<aside class="notes">
 							Let's talk about objects. Basic object handling is largely
@@ -863,16 +863,17 @@ zval *zv;
 zv = zend_read_property(ce, obj, name, strlen(name), 0, &amp;rv);
 						</code></pre>
 						<aside class="notes">
-							The one API that has changed a bit is reading properties. In PHP
-							7, you have to provide the storage for the returned value (this
-							is only used if there's a __get method or a custom read_property,
-							and you should use the return value "zv" and not access "rv").
+							The one common API that has changed a bit is reading properties.
+							In PHP 7, you have to provide the storage for the returned value
+							(this is only used if there's a __get method or a custom
+							read_property, and you should use the return value "zv" and not
+							access "rv").
 						</aside>
 					</section>
 
 					<section id="properties-options" data-state="translucent" data-background="translucent">
 						<pre><code class="c" data-trim>
-inline static zval *
+zval *
 compat_zend_read_property(zend_class_entry *ce, zval *obj,
                           const char *name, int name_length,
                           int silent, zval *rv TSRMLS_DC) {
@@ -888,17 +889,147 @@ compat_zend_read_property(zend_class_entry *ce, zval *obj,
 						</code></pre>
 						<aside class="notes">
 							As zend_read_property isn't a macro, you'll have to add a shim.
-							I'd go with a little inline function or macro.
+							I'd go with a little inline function or macro, assuming you're
+							writing your own.
 						</aside>
 					</section>
 				</section>
 
-				<section data-background="red">
+				<section data-background="images/custom-object.jpg">
 					<section id="custom-objects">
 						<aside class="notes">
 							As I mentioned earlier, there is a difference with objects with
 							custom allocators because the zend_object struct is variable
 							length (to cope with properties).
+						</aside>
+					</section>
+
+					<section id="custom-objects5-create" data-state="translucent" data-background="translucent">
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim style="font-size: 1.1em">
+typedef struct {
+	zend_object std;
+	my_struct *struct;
+} my_object;
+
+zend_object_value my_object_new(zend_class_entry *ce TSRMLS_DC) {
+	my_object *intern;
+	zend_object_value retval;
+
+	intern = emalloc(sizeof(my_object));
+	/* ... */
+	retval.handle = zend_objects_store_put(intern,
+		zend_objects_destroy_object, my_object_free, NULL TSRMLS_CC);
+	return retval;
+}
+						</code></pre>
+						<aside class="notes">
+							In PHP 5, the start of a create_object handler looks like this
+							(in general, they have lots of boilerplate). You allocate the
+							structure, and then you later register it in the object store and
+							return that value. (Also the only slide with smaller text.
+							Sorry.)
+						</aside>
+					</section>
+
+					<section id="custom-objects5-get" data-state="translucent" data-background="translucent">
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+typedef struct {
+	zend_object std;
+	my_struct *struct;
+} my_object;
+
+my_object *my_object_get(zval *zv TSRMLS_DC) {
+	return (my_object *)
+		zend_object_store_get_object(zv TSRMLS_CC);
+}
+						</code></pre>
+						<aside class="notes">
+							Retrieving an object was easy: you'd just cast what you got back
+							from the object store.
+						</aside>
+					</section>
+
+					<section id="custom-objects7-create" data-state="translucent" data-background="translucent">
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+typedef struct {
+	my_struct *struct;
+	zend_object std;
+} my_object;
+
+zend_object *my_object_new(zend_class_entry *ce) {
+	struct my_object *intern;
+
+	intern = emalloc(sizeof(my_object) +
+	                 zend_objects_properties_size(ce));
+	/* ... */
+	return &amp;intern-&gt;std;
+}
+						</code></pre>
+						<aside class="notes">
+							The PHP 7 version of create_object has three major differences.
+							Firstly, we've reordered the structure fields: the zend_object
+							has to be the last element now because it's variable length.
+							Secondly, there's the emalloc: you have to add the variable space
+							required for the class's declared properties. Finally, you don't
+							call zend_objects_store_put any more: you return a pointer to the
+							zend_object buried within your structure.
+						</aside>
+					</section>
+
+					<section id="custom-objects7-get" data-state="translucent" data-background="translucent">
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+typedef struct {
+	my_struct *struct;
+	zend_object std;
+} my_object;
+
+my_object *my_object_get(zval *zv) {
+	zend_object *obj = Z_OBJ_P(zv);
+
+	return (my_object *)
+		((char *)(obj) - XtOffsetOf(my_object, std));
+}
+						</code></pre>
+						<aside class="notes">
+							Oh. Oh no.
+							<br>
+							The getter is more complicated than before. The zend_object
+							pointer within the zval points partway through our struct, so we
+							use XtOffsetOf to calculate how far back we have to go. The char
+							* is because offsetof returns a value in bytes. XtOffsetOf
+							instead of offsetof is because of ancient compilers.
+						</aside>
+					</section>
+
+					<section id="custom-objects7-offset" data-state="translucent" data-background="translucent">
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+zend_class_entry *my_object_ce;
+zend_object_handlers my_object_handlers;
+
+PHP_MINIT_FUNCTION(my_extension) {
+	zend_class_entry ce;
+
+	INIT_CLASS_ENTRY(ce, "My\\Object", NULL);
+	my_object_ce = zend_register_internal_class_ex(&amp;ce, NULL);
+
+	memcpy(&amp;my_object_handlers, &amp;std_object_handlers,
+	       sizeof(zend_object_handlers));
+	my_object_handlers.offset = XtOffsetOf(my_object, std);
+}
+						</code></pre>
+						<aside class="notes">
+							There's one other wrinkle, too, in PHP 7. You have to set the new
+							offset field on the object handlers structure to the offset of
+							your zend_object within your custom structure. This allows PHP to
+							free your entire structure when the object is deleted (although
+							you still have to free anything else you've allocated and pointed
+							to). The reality is that you're going to have two versions of
+							stuff to support both versions.
 						</aside>
 					</section>
 				</section>
@@ -914,6 +1045,36 @@ compat_zend_read_property(zend_class_entry *ce, zval *obj,
 				<section data-background="red">
 					<section id="calling">
 						TSRMLS.
+						<aside class="notes">
+						</aside>
+					</section>
+				</section>
+
+				<section data-background="red">
+					<section id="review">
+						<aside class="notes">
+							Let's review quickly: what do you need to grep for in your code
+							base?
+						</aside>
+					</section>
+
+					<section id="" data-state="translucent" data-background="translucent">
+						<h2>Type changes</h2>
+						<ul>
+							<li><code>IS_BOOL</code></li>
+							<li><code>Z_BVAL</code></li>
+						</ul>
+						<aside class="notes">
+							Anything to do with accessing boolean zvals is going to need
+							work.
+						</aside>
+					</section>
+
+					<section id="" data-state="translucent" data-background="translucent">
+						<h2></h2>
+						<ul>
+							<li><code></code></li>
+						</ul>
 						<aside class="notes">
 						</aside>
 					</section>
