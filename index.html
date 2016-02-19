@@ -998,14 +998,6 @@ PHP_MINIT_FUNCTION(my_extension) {
 					</section>
 				</section>
 
-				<section data-background="red">
-					<section id="calling">
-						Calling back into PHP.
-						<aside class="notes">
-						</aside>
-					</section>
-				</section>
-
 				<section id="tsrmls">
 					<ul>
 						<li><s><code>TSRMLS_C</code></s></li>
@@ -1015,107 +1007,104 @@ PHP_MINIT_FUNCTION(my_extension) {
 						<li><s><code>TSRMLS_FETCH</code></s></li>
 					</ul>
 					<aside class="notes">
-						Finally, the change that renamed the talk: TSRMLS macros are no
-						more in PHP 7. They've been preserved solely to ensure that you
-						don't have to remove them if you're supporting both versions, but
-						for PHP 7 only code, you can rip them out.
+						The last change I'll talk about is the one that renamed the talk:
+						TSRMLS macros are no more in PHP 7. They've been preserved solely
+						to ensure that you don't have to remove them if you're supporting
+						both versions, but for PHP 7 only code, you can rip them out.
 					</aside>
 				</section>
 
-				<section data-background="red">
-					<section id="review">
+				<section data-background="images/tools.jpg">
+					<section id="tools">
 						<aside class="notes">
-							Let's review quickly: what do you need to grep for in your code
-							base? Here are a set of cheat sheets that you can feed into git
-							grep.
+							Finally, let's look at a few tools and references that I've
+							personally found useful.
 						</aside>
 					</section>
 
-					<section id="review-zpp" data-state="translucent" data-background="translucent">
-						<h2>Parameter parsing</h2>
-						<ul>
-							<li><code>zend_parse_parameters</code></li>
-						</ul>
+					<section id="phpng-upgrading" data-state="translucent" data-background="translucent">
+						<h2>phpng-upgrading</h2>
+						<a href="https://wiki.php.net/phpng-upgrading">
+							https://wiki.php.net/phpng-upgrading
+						</a>
 						<aside class="notes">
-							Any place where you parse parameters. You need to check the types
-							of the variables that are coming out.
+							The absolute best guide available today is the phpng upgrading
+							guide on the php.net wiki. It's not perfect, but it covers a lot
+							of things I've talked about in more depth, and covers a lot more
+							too.
 						</aside>
 					</section>
 
-					<section id="review-zval" data-state="translucent" data-background="translucent">
-						<h2>Type changes</h2>
-						<ul>
-							<li><code>IS_BOOL</code></li>
-							<li><code>Z_BVAL</code></li>
-							<li><code>&lt;long&gt;</code></li>
-							<li><code>Z_[A-Z_]+_PP</code></li>
-						</ul>
+					<section id="lxr" data-state="translucent" data-background="translucent">
+						<h2>LXR</h2>
+						<a href="http://lxr.php.net/">
+							http://lxr.php.net/
+						</a>
+						<img src="images/lxr.png">
 						<aside class="notes">
-							Anything to do with accessing boolean or long zvals is going to
-							need work. Also, any double pointer macros need to be refactored.
+							LeXeR is a great tool for seeing how definitions and prototypes
+							change between versions. Enter a definition, select PHP_5_6 and
+							PHP_7_0, and you know how it changed!
 						</aside>
 					</section>
 
-					<section id="review-strings" data-state="translucent" data-background="translucent">
-						<h2>Strings</h2>
-						<ul>
-							<li><code>ZVAL_STRING</code></li>
-							<li><code>ZVAL_STRINGL</code></li>
-							<li><code>RETURN_STRING</code></li>
-							<li><code>RETURN_STRINGL</code></li>
-							<li><code>RETVAL_STRING</code></li>
-							<li><code>RETVAL_STRINGL</code></li>
-							<li><code>add_assoc_string</code></li>
-							<li><code>add_assoc_stringl</code></li>
-						</ul>
+					<section id="git" data-state="translucent" data-background="translucent">
+						<h2><span class="octicon octicon-git-compare"></span></h2>
+						<code>git diff PHP-5.6..PHP-7.0 ext/gmp</code>
 						<aside class="notes">
-							All of the string mutators that lost their duplication
-							parameters.
+							Comparing other extensions before and after PHP 7 support is a
+							really useful tool too. You can do it with a Git checkout of
+							php-src easily: pick an extension that does something like what
+							you want, and diff PHP-5.6 to PHP-7.0. Or find a PECL extension
+							and compare side by side.
 						</aside>
 					</section>
 
-					<section id="review-objects" data-state="translucent" data-background="translucent">
-						<h2>Hash tables</h2>
-						<ul>
-							<li><code>zend_hash_</code></li>
-						</ul>
+					<section id="pecl-compat" data-state="translucent" data-background="translucent">
+						<h2>pecl-compat</h2>
+						<a href="https://github.com/flaupretre/pecl-compat/">
+							https://github.com/flaupretre/pecl-compat/
+						</a>
 						<aside class="notes">
-							You're probably going to have to check every use of a zend_hash
-							function, given the number of changes to how values are stored.
-							On the bright side, if you're migrating to PHP 7 only or using a
-							compatibility library, you might get to replace ugly iteration
-							code with much sleeker iteration code.
-						</aside>
-					</section>
-
-					<section id="review-resources" data-state="translucent" data-background="translucent">
-						<h2>Resources</h2>
-						<ul>
-							<li><code>zend_[a-z_]+_resource</code></li>
-							<li><code>ZEND_[A-Z_]+_RESOURCE</code></li>
-						</ul>
-						<aside class="notes">
-							The incompatible resource APIs are problematic.
+							Francois Laupretre has written a set of headers called
+							pecl-compat that you can pull into your project (I've done so in
+							PECL radius through a submodule). They're not comprehensive, but
+							he accepts pull requests happily, and where possible, this shims
+							PHP 5 APIs so you can write PHP 7 code, and provides
+							compatibility functions or macros where not. Object support would
+							be great!
 						</aside>
 					</section>
 				</section>
 
-				<section data-background="red">
-					<section id="calling">
-						Tools and references.
+				<section data-background="images/afraid.jpg">
+					<section id="fear">
 						<aside class="notes">
+							Don't be afraid. Upgrading looks scary when you first see what's
+							changed, and the compiler errors when you first try to build your
+							extension against PHP 7, but it's really not that bad. I did RADIUS
+							in a pretty lazy afternoon, and nine out of ten PHP contributors
+							agree that I write terrible code. (Ask Nikita about my CSV code.)
+							If you're methodical, you'll have no problem.
 						</aside>
 					</section>
-				</section>
 
-        <section>
-          <section id="questions">
+          <section id="questions" data-state="translucent" data-background="translucent">
             <h1>Thank you!</h1>
             <h2>Questions?</h2>
-						<a href="https://twitter.com/LGnome">@LGnome</a>
+						<p><a href="https://twitter.com/LGnome">@LGnome</a></p>
+						<p>
+							Slides:
+							<a href="https://lawngnome.github.io/rip-tsrmls-cc/">
+								https://lawngnome.github.io/rip-tsrmls-cc/
+							</a>
+						</p>
+						<aside class="notes">
+							Go to image credits.
+						</aside>
           </section>
 
-          <section id="image-credits">
+          <section id="image-credits" data-state="translucent" data-background="translucent">
             <h2>Image credits</h2>
             <div></div>
           </section>

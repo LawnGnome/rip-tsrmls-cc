@@ -34,6 +34,10 @@
   max-height: 40em;
 }
 
+.reveal a {
+  color: #24396b;
+}
+
 .reveal ul {
   list-style: none;
   margin-left: 0;
@@ -91,6 +95,10 @@
 
 .image-credits .licence:after {
   content: ")";
+}
+
+#image-credits ul {
+  font-size: 0.75em;
 }
 
 /* vim: set nocin ai et ts=2 sw=2: */

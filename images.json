@@ -52,10 +52,16 @@
     "author": "Allison McDonald",
     "title": "Labels for Art vs Craft Show"
   },
-  "": {
+  "tools": {
     "licence": "CC-BY 2.0",
-    "source": "",
-    "author": "",
-    "title": ""
+    "source": "https://flic.kr/p/3r7wnw",
+    "author": "Josep Ma. Rosell",
+    "title": "Tools"
+  },
+  "fear": {
+    "licence": "CC-BY 4.0",
+    "source": "https://flic.kr/p/oQukVa",
+    "author": "Adam Harvey",
+    "title": "The ears have it"
   }
 }
