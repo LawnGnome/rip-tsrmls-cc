@@ -408,6 +408,54 @@ uint32_t zend_string_delref(zend_string *s);
 						</aside>
 					</section>
 
+					<section id="string-duplication" data-state="translucent" data-background="translucent">
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+RETURN_STRING(str, duplicate)
+ZVAL_STRING(zv, str, duplicate)
+add_assoc_string(zv, key, str, duplicate)
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+RETURN_STRING(str)
+ZVAL_STRING(zv, str)
+add_assoc_string(zv, key, str)
+						</code></pre>
+						<aside class="notes">
+							Most macros and functions that dealt with setting strings had
+							parameters indicating whether you wanted to duplicate the input.
+							Those are now gone, since they have to create a zend_string
+							anyway and will always duplicate. You can override this by
+							instantiating the string directly using the zend_string API, but
+							why would you?
+						</aside>
+					</section>
+
+					<section id="string-duplication-options" data-state="translucent" data-background="translucent">
+						<pre><code class="c" data-trim>
+#if ZEND_MODULE_API_NO &lt; 20151012
+
+#undef ZVAL_STRING
+#define ZVAL_STRING(zv, str) do {             \
+	const char *__s = (s);                \
+	int __l = strlen(str);                \
+	zval *__z = (zv);                     \
+	Z_STRLEN_P(__z) = l;                  \
+	Z_STRVAL_P(__z) = estrndup(__s, __l); \
+} while (0);
+
+#endif
+						</code></pre>
+						<aside class="notes">
+							Again, if you're supporting both versions, your options are kind
+							of problematic. You're going to have to have compatibility
+							wrappers or redefine the macros (my preference, but make sure you
+							do it after including all PHP headers!). The downside is that
+							it's ugly (and there's eight of them), although you can basically
+							crib the implementations from the PHP 5.6 source.
+						</aside>
+					</section>
+
 					<section id="zval-object" data-state="translucent" data-background="translucent">
 						<h2><code>IS_OBJECT</code></h2>
 						<h3>PHP 5</h3>
@@ -486,24 +534,6 @@ typedef struct {
 						</aside>
 					</section>
 
-					<section id="zend-resource-api" data-state="translucent" data-background="translucent">
-						<h2><code>zend_resource</code></h2>
-						<pre><code class="c" data-trim>
-zend_resource *zend_register_resource(void *ptr, int type);
-void *zend_fetch_resource_ex(zend_resource *res, const char *name,
-                             int type);
-int zend_list_close(zend_resource *res);
-						</code></pre>
-						<aside class="notes">
-							Again, there's a new set of functions to handle resources, which
-							mostly replace macros. Annoyingly, they're incompatible with the
-							old ones, which poses a significant challenge if you're trying to
-							support both PHP 5 and PHP 7: you're either going to have to
-							write abstraction code in your extension, or pick up a
-							compatibility library.
-						</aside>
-					</section>
-
 					<section id="zval-new-types" data-state="translucent" data-background="translucent">
 						<pre><code class="c" data-trim>
 #define IS_UNDEF     0
@@ -522,7 +552,7 @@ zend_reference *ref;
 					</section>
 				</section>
 
-				<section data-background="images/audit.jpg">
+				<section data-background="images/parameters.jpg">
 					<section id="parameter-parsing">
 						<aside class="notes">
 							Let's look at more concrete things you need to audit. We'll start
@@ -587,72 +617,6 @@ zend_parse_parameters(ZEND_NUM_ARGS(), "l", &amp;l);
 						</code></pre>
 						<aside class="notes">
 							I'd do something similar for zend_long too.
-						</aside>
-					</section>
-
-					<section id="string-duplication" data-state="translucent" data-background="translucent">
-						<h3>PHP 5</h3>
-						<pre><code class="c" data-trim>
-RETURN_STRING(str, duplicate)
-ZVAL_STRING(zv, str, duplicate)
-add_assoc_string(zv, key, str, duplicate)
-						</code></pre>
-						<h3>PHP 7</h3>
-						<pre><code class="c" data-trim>
-RETURN_STRING(str)
-ZVAL_STRING(zv, str)
-add_assoc_string(zv, key, str)
-						</code></pre>
-						<aside class="notes">
-							Coming back to strings, most macros and functions that dealt with
-							setting strings had parameters indicating whether you wanted to
-							duplicate the input. Those are now gone, since they have to
-							create a zend_string anyway and will always duplicate. You can
-							override this by instantiating the string directly using the
-							zend_string API, but why would you?
-						</aside>
-					</section>
-
-					<section id="string-duplication-options" data-state="translucent" data-background="translucent">
-						<pre><code class="c" data-trim>
-#if ZEND_MODULE_API_NO &lt; 20151012
-
-#undef ZVAL_STRING
-#define ZVAL_STRING(zv, str) do {             \
-	const char *__s = (s);                \
-	int __l = strlen(str);                \
-	zval *__z = (zv);                     \
-	Z_STRLEN_P(__z) = l;                  \
-	Z_STRVAL_P(__z) = estrndup(__s, __l); \
-} while (0);
-
-#endif
-						</code></pre>
-						<aside class="notes">
-							Again, if you're supporting both versions, your options are kind
-							of problematic. You're going to have to have compatibility
-							wrappers or redefine the macros (my preference, but make sure you
-							do it after including all PHP headers!). The downside is that
-							it's ugly (and there's eight of them), although you can basically
-							crib the implementations from the PHP 5.6 source.
-						</aside>
-					</section>
-
-					<section id="string-duplication-list" data-state="translucent" data-background="translucent">
-						<pre><code class="c" data-trim>
-ZVAL_STRING
-ZVAL_STRINGL
-RETURN_STRING
-RETURN_STRINGL
-RETVAL_STRING
-RETVAL_STRINGL
-add_assoc_string
-add_assoc_stringl
-						</code></pre>
-						<aside class="notes">
-							Basically, if you're looking for a cheat sheet, these are the
-							macros I know about that are problematic. You need to audit all
-							uses of these.
 						</aside>
 					</section>
 				</section>
@@ -1042,40 +1006,96 @@ PHP_MINIT_FUNCTION(my_extension) {
 					</section>
 				</section>
 
-				<section data-background="red">
-					<section id="calling">
-						TSRMLS.
-						<aside class="notes">
-						</aside>
-					</section>
+				<section id="tsrmls">
+					<ul>
+						<li><s><code>TSRMLS_C</code></s></li>
+						<li><s><code>TSRMLS_CC</code></s></li>
+						<li><s><code>TSRMLS_D</code></s></li>
+						<li><s><code>TSRMLS_DC</code></s></li>
+						<li><s><code>TSRMLS_FETCH</code></s></li>
+					</ul>
+					<aside class="notes">
+						Finally, the change that renamed the talk: TSRMLS macros are no
+						more in PHP 7. They've been preserved solely to ensure that you
+						don't have to remove them if you're supporting both versions, but
+						for PHP 7 only code, you can rip them out.
+					</aside>
 				</section>
 
 				<section data-background="red">
 					<section id="review">
 						<aside class="notes">
 							Let's review quickly: what do you need to grep for in your code
-							base?
+							base? Here are a set of cheat sheets that you can feed into git
+							grep.
 						</aside>
 					</section>
 
-					<section id="" data-state="translucent" data-background="translucent">
+					<section id="review-zpp" data-state="translucent" data-background="translucent">
+						<h2>Parameter parsing</h2>
+						<ul>
+							<li><code>zend_parse_parameters</code></li>
+						</ul>
+						<aside class="notes">
+							Any place where you parse parameters. You need to check the types
+							of the variables that are coming out.
+						</aside>
+					</section>
+
+					<section id="review-zval" data-state="translucent" data-background="translucent">
 						<h2>Type changes</h2>
 						<ul>
 							<li><code>IS_BOOL</code></li>
 							<li><code>Z_BVAL</code></li>
+							<li><code>&lt;long&gt;</code></li>
+							<li><code>Z_[A-Z_]+_PP</code></li>
 						</ul>
 						<aside class="notes">
-							Anything to do with accessing boolean zvals is going to need
-							work.
+							Anything to do with accessing boolean or long zvals is going to
+							need work. Also, any double pointer macros need to be refactored.
 						</aside>
 					</section>
 
-					<section id="" data-state="translucent" data-background="translucent">
-						<h2></h2>
+					<section id="review-strings" data-state="translucent" data-background="translucent">
+						<h2>Strings</h2>
 						<ul>
-							<li><code></code></li>
+							<li><code>ZVAL_STRING</code></li>
+							<li><code>ZVAL_STRINGL</code></li>
+							<li><code>RETURN_STRING</code></li>
+							<li><code>RETURN_STRINGL</code></li>
+							<li><code>RETVAL_STRING</code></li>
+							<li><code>RETVAL_STRINGL</code></li>
+							<li><code>add_assoc_string</code></li>
+							<li><code>add_assoc_stringl</code></li>
 						</ul>
 						<aside class="notes">
+							All of the string mutators that lost their duplication
+							parameters.
+						</aside>
+					</section>
+
+					<section id="review-objects" data-state="translucent" data-background="translucent">
+						<h2>Hash tables</h2>
+						<ul>
+							<li><code>zend_hash_</code></li>
+						</ul>
+						<aside class="notes">
+							You're probably going to have to check every use of a zend_hash
+							function, given the number of changes to how values are stored.
+							On the bright side, if you're migrating to PHP 7 only or using a
+							compatibility library, you might get to replace ugly iteration
+							code with much sleeker iteration code.
+						</aside>
+					</section>
+
+					<section id="review-resources" data-state="translucent" data-background="translucent">
+						<h2>Resources</h2>
+						<ul>
+							<li><code>zend_[a-z_]+_resource</code></li>
+							<li><code>ZEND_[A-Z_]+_RESOURCE</code></li>
+						</ul>
+						<aside class="notes">
+							The incompatible resource APIs are problematic.
 						</aside>
 					</section>
 				</section>
