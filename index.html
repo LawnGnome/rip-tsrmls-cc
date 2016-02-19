@@ -481,7 +481,8 @@ typedef struct {
 						</code></pre>
 						<aside class="notes">
 							This one's actually a huge improvement: the resource type is now
-							kept inline.
+							kept inline. The bad news is that the API has changed, which I'll
+							talk more about later.
 						</aside>
 					</section>
 
@@ -567,7 +568,11 @@ zend_parse_parameters(ZEND_NUM_ARGS(), "s", &amp;str, &amp;len);
 						</code></pre>
 						<aside class="notes">
 							How do you deal with this if you want to support both versions?
-							You can do some macro and typedef magic.
+							You can do some macro and typedef magic. (I'm going to show
+							examples of how you might do this yourself, but bear in mind that
+							there are libraries that will abstract at least some of this for
+							you in existence. It's important to know how the sausage is made,
+							but you may not have to write much of this shim code yourself.)
 						</aside>
 					</section>
 
@@ -678,16 +683,115 @@ zend_string_release(key);
 						<aside class="notes">
 							This is a good'un. Array keys in PHP 5 included the null
 							terminator in their length because&hellip; hell if I know. In PHP
-							7, they don't (partly because we're using zend_strings).
+							7, they don't (partly because we're using zend_strings). You'll
+							also note that the API has changed significantly (for the better,
+							since it removes a bunch of parameters nobody ever used).
+						</aside>
+					</section>
+
+					<section id="is-ptr" data-state="translucent" data-background="translucent">
+						<h2><code>IS_PTR</code></h2>
+						<pre><code class="c" data-trim>
+zend_string *key;
+my_struct *ptr;
+
+zend_hash_update_ptr(ht, key, ptr);
+ptr = (my_struct *) zend_hash_find_ptr(ht, key);
+						</code></pre>
+						<aside class="notes">
+							There's another aspect to this too: you would have noticed that
+							we didn't provide the size. The reason for this is because
+							HashTables now store zval pointers only. Instead, to store a raw
+							pointer, you use a parallel API that internally wraps the pointer
+							in a zval with the new IS_PTR type. 
+						</aside>
+					</section>
+
+					<section id="hashtable-options" data-state="translucent" data-background="translucent">
+						<pre><code class="c" data-trim>
+inline zval *
+compat_zend_hash_find(HashTable *ht, const char *key, size_t len) {
+#if ZEND_MODULE_API_NO &gt;= 20151012
+	zend_string *zs = zend_string_init(key, len);
+	zval *val = zend_hash_find(ht, zs);
+	zend_string_release(zs);
+	return val;
+#else
+	zval *val = NULL;
+	int res = zend_hash_find(ht, key, len + 1, &amp;val);
+	return (res == SUCCESS) ? val : NULL;
+#endif
+}
+						</code></pre>
+						<aside class="notes">
+							This one's tricky to shim between versions. So far, everyone I've
+							seen who's done it has written wrappers with different names
+							&amp; you can add the _ptr functions easily enough to PHP 5, but
+							that doesn't help with the other API changes. You need to audit
+							all zend_hash function calls and figure out if you want to DIY or
+							pull in a compatibility helper.
 						</aside>
 					</section>
 				</section>
 
-				<section data-background="red">
+				<section data-background="images/resources.jpg">
 					<section id="resources">
 						<aside class="notes">
 							Let's talk about resources, those weird holdovers from the old
-							days. As I mentioned earlier, they're actually a fair bit nicer to use, but 
+							days. As I mentioned earlier, they're actually a fair bit nicer
+							to use, but that doesn't necessarily mean that you want to.
+						</aside>
+					</section>
+
+					<section id="resource-api" data-state="translucent" data-background="translucent">
+						<h3>PHP 5</h3>
+						<pre><code class="c" data-trim>
+int zend_register_resource(zval *zv, void *ptr, int type);
+void *zend_fetch_resource(zval **id, int default_id,
+                          const char *name, int type,
+													int num_types, ...);
+int zend_list_delete(int id);
+						</code></pre>
+						<h3>PHP 7</h3>
+						<pre><code class="c" data-trim>
+zend_resource *zend_register_resource(void *ptr, int type);
+void *zend_fetch_resource_ex(zend_resource *res, const char *name,
+                             int type);
+int zend_list_close(zend_resource *res);
+						</code></pre>
+						<aside class="notes">
+							There were a set of macros on PHP 5 that mapped to the underlying
+							functions. As you can see, the functions have changed a tonne for
+							the better, but you can't really shim them in any meaningful way,
+							particularly since zend_register_resource() changed the zval on
+							PHP 5 but doesn't on PHP 7.  On the bright side, the basic
+							workflow hasn't really changed: you register a pointer, fetch it,
+							and delete/close it.
+						</aside>
+					</section>
+
+					<section id="resource-options" data-state="translucent" data-background="translucent">
+						<pre><code class="c" data-trim>
+#if ZEND_MODULE_API_NO &gt;= 20151012
+#define ZEND_REGISTER_RESOURCE(zv, ptr, type) \
+	ZVAL_RES(zv, zend_register_resource(ptr, type));
+
+#define ZEND_FETCH_RESOURCE(zv, type, id, default_id, name, type) \
+	zend_fetch_resource_ex(zv, name, type);
+
+#define ZEND_CLOSE_RESOURCE(zv) \
+	zend_list_close(Z_RES_P(zv))
+#else
+#define ZEND_CLOSE_RESOURCE(zv) \
+	zend_list_delete(Z_LVAL_P(zv))
+#endif
+						</code></pre>
+						<aside class="notes">
+							Your options are either to write a wrapper like the hashtable
+							wrapper, or reimplement the macros on PHP 7. I personally prefer
+							the wrapper option (and implemented it in pecl-compat), but
+							here's a rough version of the macros if you'd prefer that (the
+							ignored values are unfortunate).
 						</aside>
 					</section>
 				</section>
