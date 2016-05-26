@@ -112,11 +112,11 @@
 
         <section data-background="images/road-street-sign-way.jpg">
           <section id="one-way">
+						<aside class="notes">
+							Let's look at the pros and cons of each in turn. First up: one way
+							migration.
+						</aside>
           </section>
-          <aside class="notes">
-            Let's look at the pros and cons of each in turn. First up: one way
-            migration.
-          </aside>
 
           <section id="one-way-advantages" data-state="translucent" data-background="translucent">
             <h2>Advantages</h2>
@@ -208,7 +208,7 @@
           </section>
         </section>
 
-        <section id="no-really-what-do-i-do" data-background="images/geograph-3799604-by-Peter-.jpg">
+        <section id="no-really-what-do-i-do" data-background="images/signs.jpg">
 					<aside class="notes">
 						As I've touched on already, it depends on your use case. If you're
 						doing a flag day cutover of your app, and you have an extension
@@ -351,7 +351,7 @@ ZEND_API int zend_is_true(zval *op);
 						<pre><code class="c" data-trim>
 struct {
 	char *val;
-	int len;
+	int   len;
 } str;
 						</code></pre>
 						<h3>PHP 7</h3>
@@ -379,7 +379,7 @@ typedef struct {
 						<aside class="notes">
 							Key points: lengths are now size_t, not signed int, as $DEITY
 							intended. Garbage collection now takes place within the
-							structure. h is a cached hash value.
+							structure. h is a cached hash value. It's variable length.
 						</aside>
 					</section>
 
@@ -492,8 +492,9 @@ typedef struct {
 							directly, but again: refcounting is done on the object. The class
 							entry and properties are now inline, which improves caching and
 							performance. Note that this is variable length, though: this is
-							important if you're overriding the create_object handler. I won't
-							get into the API, because it hasn't changed much.
+							important if you're overriding the create_object handler, and
+							I'll talk about it later. I won't get into the API, because it
+							hasn't changed much.
 						</aside>
 					</section>
 
@@ -520,12 +521,13 @@ typedef struct {
 	int               handle;
 	int               type;
 	void             *ptr;
-};
+} zend_resource;
 						</code></pre>
 						<aside class="notes">
 							This one's actually a huge improvement: the resource type is now
-							kept inline. The bad news is that the API has changed, which I'll
-							talk more about later.
+							kept inline rather than having to poke through a murky API. The
+							bad news is that the API for resources in general has changed,
+							which I'll talk more about later.
 						</aside>
 					</section>
 
@@ -754,7 +756,9 @@ int zend_list_delete(int id);
 						<h3>PHP 7</h3>
 						<pre><code class="c" data-trim>
 zend_resource *zend_register_resource(void *ptr, int type);
-void *zend_fetch_resource_ex(zend_resource *res, const char *name,
+void *zend_fetch_resource(zend_resource *res, const char *name,
+                          int type);
+void *zend_fetch_resource_ex(zval *res, const char *name,
                              int type);
 int zend_list_close(zend_resource *res);
 						</code></pre>
